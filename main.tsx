@@ -1,7 +1,7 @@
 import __vite__cjsImport0_react_jsxDevRuntime from "/@fs/home/runner/workspace/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=5b28a3c4"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
 import __vite__cjsImport1_reactDom_client from "/@fs/home/runner/workspace/node_modules/.vite/deps/react-dom_client.js?v=5b28a3c4"; const createRoot = __vite__cjsImport1_reactDom_client["createRoot"];
-import App from "/src/App.tsx?t=1765136345251";
-import "/src/index.css?t=1765136345251";
+import App from "/src/App.tsx";
+import "/src/index.css";
 createRoot(document.getElementById("root")).render(/* @__PURE__ */ jsxDEV(App, { "data-replit-metadata": "client/src/main.tsx:5:52", "data-component-name": "App" }, void 0, false, {
   fileName: "/home/runner/workspace/client/src/main.tsx",
   lineNumber: 5,
