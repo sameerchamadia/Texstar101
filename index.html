@@ -1,0 +1,1274 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Texstar Global</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: one fixed dotted globe turns with the scroll while oversized lines pass over it on the left; shipping lanes draw in section by section, then flow continuously. */
+:root {
+  --bg: #06131e;
+  --ocean-hi: #0f2c44;
+  --ocean-lo: #08192a;
+  --ink: #eaf1f6;
+  --ink-dim: #9db0bf;
+  --land: #8fb0c7;
+  --grat: #2c5373;
+  --lane: #ffc857;
+  --lane2: #62c6e8;
+  --star: #ffffff;
+  --night: #01070d;
+  --line: #1d3a52;
+  --font-display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --font-body: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --gx: clamp(0px, 4.5vw, 64px);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #e9f0f4;
+    --ocean-hi: #f6fafc;
+    --ocean-lo: #cfdee7;
+    --ink: #0a2236;
+    --ink-dim: #4a6379;
+    --land: #3d6785;
+    --grat: #a8c0d0;
+    --lane: #a86300;
+    --lane2: #0b7ba0;
+    --star: #0a2236;
+    --night: #0a2236;
+    --line: #c3d3de;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #e9f0f4;
+  --ocean-hi: #f6fafc;
+  --ocean-lo: #cfdee7;
+  --ink: #0a2236;
+  --ink-dim: #4a6379;
+  --land: #3d6785;
+  --grat: #a8c0d0;
+  --lane: #a86300;
+  --lane2: #0b7ba0;
+  --star: #0a2236;
+  --night: #0a2236;
+  --line: #c3d3de;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); overflow-x: hidden; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 30;
+  background: var(--bg);
+}
+:focus-visible { outline: 2px solid var(--lane); outline-offset: 3px; }
+
+#stage {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  touch-action: pan-y;
+  cursor: grab;
+  display: block;
+}
+#stage.drag { cursor: grabbing; }
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--bg) 82%, transparent) 0%, color-mix(in srgb, var(--bg) 40%, transparent) 38%, transparent 62%);
+}
+
+/* header */
+.top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 14px);
+  padding-bottom: 22px;
+  padding-left: calc(max(16px, env(safe-area-inset-left, 0px)) + var(--gx));
+  padding-right: calc(max(16px, env(safe-area-inset-right, 0px)) + var(--gx));
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 90%, transparent), transparent);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.brand svg { width: 1.05rem; height: 1.05rem; color: var(--lane); }
+.tools { display: flex; align-items: center; gap: 10px; }
+.btn {
+  appearance: none;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 7px 14px;
+  font: 500 0.875rem/1.2 var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.btn:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); border-color: var(--ink-dim); }
+.btn.icon { width: 36px; height: 34px; padding: 0; display: inline-grid; place-items: center; }
+.btn.icon svg { width: 16px; height: 16px; }
+
+/* story beats */
+main { position: relative; z-index: 2; }
+.wrap { max-width: 1500px; margin: 0 auto; padding-inline: var(--gx); }
+.beat {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-block: 12vh;
+  pointer-events: none;
+}
+.beat.tall { min-height: 115svh; }
+.beat .wrap { width: 100%; }
+.beat .in { max-width: min(48rem, 100%); will-change: transform, opacity; }
+.big {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  font-size: clamp(3.6rem, 10.5vw, 9.5rem);
+}
+.big span { display: block; }
+.hero-title { font-size: clamp(4.5rem, 13vw, 11.5rem); font-weight: 900; }
+.tagline {
+  margin: 1.4rem 0 0;
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+.statement {
+  margin: 0;
+  font-size: clamp(1.55rem, 3.1vw, 2.7rem);
+  font-weight: 500;
+  line-height: 1.22;
+  letter-spacing: -0.012em;
+  max-width: 40rem;
+  text-wrap: pretty;
+}
+.cue {
+  position: absolute;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-dim);
+  font-size: 0.8125rem;
+  transform: translateX(-50%);
+}
+.cue i {
+  display: block;
+  width: 1px;
+  height: 38px;
+  background: linear-gradient(var(--ink-dim), transparent);
+  transform-origin: top;
+  animation: cue 2.2s ease-in-out infinite;
+}
+@keyframes cue { 0% { transform: scaleY(0); } 55% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* final movement beat */
+.final .big { font-size: clamp(3.6rem, 11vw, 10rem); }
+.marq {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 5vh);
+  overflow: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.marq .track { display: inline-flex; will-change: transform; }
+.marq .grp { display: inline-flex; align-items: center; flex: none; }
+.marq .ph {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(2.4rem, 6.5vw, 5.5rem);
+  line-height: 1.1;
+  padding-inline: 0.5em;
+  color: var(--ink);
+}
+.marq .ph.o { color: transparent; -webkit-text-stroke: 1.5px var(--ink-dim); }
+.marq svg { width: 0.9rem; height: 0.9rem; color: var(--lane); flex: none; }
+
+/* audience */
+.audience .in { max-width: min(44rem, 100%); }
+.head {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.9;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  text-wrap: balance;
+}
+.lede { margin: 1.1rem 0 0; font-size: clamp(1.05rem, 1.6vw, 1.3rem); color: var(--ink-dim); max-width: 32rem; }
+.seg { list-style: none; margin: 2.2rem 0 0; padding: 0; display: grid; border-top: 1px solid var(--line); }
+.seg li { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.seg h3 { margin: 0 0 6px; font-size: clamp(1.15rem, 1.9vw, 1.45rem); font-weight: 600; letter-spacing: -0.005em; }
+.seg p { margin: 0; color: var(--ink-dim); max-width: 34rem; }
+
+.seg li { transition: opacity 0.25s; }
+@media (hover: hover) { .seg:hover li:not(:hover) { opacity: 0.4; } }
+.audience .in, .live .in { pointer-events: auto; }
+
+/* hero entrance */
+@keyframes rise { from { opacity: 0; transform: translateY(0.3em); } to { opacity: 1; transform: none; } }
+.hero-title span { animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.hero-title span:nth-child(2) { animation-delay: 0.12s; }
+.hero .tagline { animation: rise 0.9s 0.3s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+
+/* live network */
+.live .in { max-width: min(34rem, 100%); }
+.live { padding-block: 14vh 8vh; }
+.live .head { font-size: clamp(2rem, 3.4vw, 3rem); }
+.live .lede { font-size: 1rem; margin-top: 0.8rem; }
+.chips { margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(6.1rem, 1fr)); gap: 6px; }
+.chip {
+  appearance: none;
+  min-width: 0;
+  text-align: left;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font: 500 0.8125rem/1.25 var(--font-body);
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.chip .dot { grid-row: 1 / span 2; width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink-dim); }
+.chip.open .dot { background: var(--lane); border-color: var(--lane); }
+.chip .ct { grid-column: 2; color: var(--ink-dim); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.chip:hover { border-color: var(--ink-dim); }
+.chip.on { border-color: var(--lane); background: color-mix(in srgb, var(--lane) 14%, transparent); }
+.card {
+  margin-top: 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.c-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; }
+.c-head h3 { margin: 0; font-family: var(--font-display); font-weight: 800; text-transform: uppercase; font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1; }
+.pill { font-size: 0.75rem; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-dim); }
+.pill.open { color: var(--lane); border-color: var(--lane); }
+.c-grid { margin: 14px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.c-grid div { min-width: 0; }
+.c-grid dt { color: var(--ink-dim); font-size: 0.75rem; }
+.c-grid dd { margin: 2px 0 0; font-size: 1.05rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.c-grid .wide { grid-column: 1 / -1; }
+.note { margin: 12px 0 0; max-width: 28rem; color: var(--ink-dim); font-size: 0.8125rem; }
+.hud span { white-space: nowrap; }
+
+/* contact */
+.contact .in { pointer-events: auto; max-width: min(40rem, 100%); }
+.contact .big { font-size: clamp(3.2rem, 8vw, 7rem); }
+.rows { margin: 2.2rem 0 0; padding: 0; display: grid; border-top: 1px solid var(--line); }
+.row {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.row dt { margin: 0; color: var(--ink-dim); font-size: 0.875rem; }
+.row dd { margin: 0; min-width: 0; font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 500; overflow-wrap: anywhere; user-select: text; }
+.row dd a { color: var(--ink); text-decoration: none; background: linear-gradient(var(--lane), var(--lane)) 0 100% / 0 1px no-repeat; transition: background-size 0.25s; }
+.row dd a:hover { background-size: 100% 1px; }
+.row .btn { padding: 5px 12px; }
+.foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  color: var(--ink-dim);
+  font-size: 0.8125rem;
+  text-align: right;
+  padding-inline: var(--gx);
+}
+.contact .foot { display: none; }
+
+/* HUD + rail */
+.hud {
+  position: fixed;
+  z-index: 15;
+  left: calc(max(16px, env(safe-area-inset-left, 0px)) + var(--gx));
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  display: grid;
+  gap: 2px;
+  font-size: 0.8125rem;
+  color: var(--ink-dim);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+.hud #region { color: var(--ink); font-weight: 500; transition: opacity 0.16s; }
+.hud #region.out { opacity: 0; }
+.rail {
+  position: fixed;
+  z-index: 15;
+  right: calc(max(16px, env(safe-area-inset-right, 0px)) + 6px);
+  top: 50%;
+  height: 46vh;
+  width: 18px;
+  transform: translateY(-50%);
+}
+.rail .ln { position: absolute; left: 8px; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.rail .fill { position: absolute; left: 8px; top: 0; bottom: 0; width: 1px; background: var(--lane); transform-origin: top; transform: scaleY(0); }
+.rail button {
+  position: absolute;
+  left: 3px;
+  width: 11px;
+  height: 11px;
+  margin-top: -5px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--ink-dim);
+  background: var(--bg);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.rail button:hover { border-color: var(--ink); }
+.rail button.on { background: var(--lane); border-color: var(--lane); transform: scale(1.25); }
+
+html.js .w { opacity: 0.2; }
+
+@media (max-width: 760px) {
+  .scrim { background: linear-gradient(0deg, color-mix(in srgb, var(--bg) 88%, transparent) 0%, color-mix(in srgb, var(--bg) 55%, transparent) 40%, transparent 62%); }
+  .beat { align-items: flex-end; padding-block: 8vh 14vh; }
+  .rail, .cue, .hud { display: none; }
+  .chips { display: flex; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }
+  .chip { flex: 0 0 auto; min-width: 6.6rem; scroll-snap-align: start; }
+  .live { padding-block: 8vh 10vh; }
+  .live .head { font-size: 2.1rem; }
+  :root { --gx: 4px; }
+  .big, .final .big, .contact .big { font-size: clamp(2.5rem, 12.5vw, 4.5rem); }
+  .hero-title { font-size: clamp(3.8rem, 19vw, 6rem); }
+  .top { gap: 8px; }
+  .brand { font-size: 1.1rem; white-space: nowrap; }
+  .tools { gap: 8px; }
+  .c-grid { margin: 10px 0; }
+  .note { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; }
+  .row dt { grid-column: 1 / -1; }
+  .foot { text-align: left; }
+  .contact .in { max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cue i { animation: none; transform: none; }
+  .hero-title span, .hero .tagline { animation: none; }
+  .seg li, .chip { transition: none; }
+  .btn, .row dd a, .rail button { transition: none; }
+}
+</style>
+
+<canvas id="stage" aria-hidden="true"></canvas>
+<div class="scrim" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="brand" href="#top" id="brand">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="currentColor" points="12,2 14.9,8.6 22,9.3 16.6,14.1 18.2,21 12,17.5 5.8,21 7.4,14.1 2,9.3 9.1,8.6"/></svg>
+    <span>Texstar Global</span>
+  </a>
+  <div class="tools">
+    <button class="btn icon" id="theme" type="button" aria-label="Switch between light and dark theme">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>
+    </button>
+    <a class="btn" href="#contact" id="toContact">Contact</a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="beat hero" data-label="Houston" aria-label="Texstar Global">
+    <div class="wrap"><div class="in">
+      <h1 class="big hero-title"><span>Texstar</span><span>Global</span></h1>
+      <p class="tagline">Trading Globally.</p>
+    </div></div>
+    <div class="cue" aria-hidden="true"><i></i><span>Scroll</span></div>
+  </section>
+
+  <section class="beat tall" data-label="Continents">
+    <div class="wrap"><div class="in">
+      <h2 class="big"><span>Across</span><span>continents.</span></h2>
+    </div></div>
+  </section>
+
+  <section class="beat tall" data-label="Markets">
+    <div class="wrap"><div class="in">
+      <h2 class="big"><span>Across</span><span>markets.</span></h2>
+    </div></div>
+  </section>
+
+  <section class="beat tall" data-label="Borders">
+    <div class="wrap"><div class="in">
+      <h2 class="big"><span>Across</span><span>borders.</span></h2>
+    </div></div>
+  </section>
+
+  <section class="beat" data-label="Commerce">
+    <div class="wrap"><div class="in">
+      <p class="statement scrub">Texstar Global operates at the intersection of global commerce, connecting the movement of goods across an increasingly connected world.</p>
+    </div></div>
+  </section>
+
+  <section class="beat" data-label="Network">
+    <div class="wrap"><div class="in">
+      <p class="statement scrub">Our presence extends beyond individual markets—into a global network where trade never stands still.</p>
+    </div></div>
+  </section>
+
+  <section class="beat live" data-static data-label="Live network" aria-label="Live network">
+    <div class="wrap"><div class="in">
+      <h2 class="head">Where trade never stands still</h2>
+      <p class="lede"><span id="openN">0</span> of <span id="hubN">14</span> locations are in weekday business hours right now.</p>
+      <div class="chips" id="chips"></div>
+      <div class="card" id="card">
+        <div class="c-head"><h3 id="cName">Rotterdam</h3><span class="pill" id="cState">Outside business hours</span></div>
+        <dl class="c-grid">
+          <div><dt>Local time</dt><dd id="cTime">--:--:--</dd></div>
+          <div><dt>Sun</dt><dd id="cSun">Daylight</dd></div>
+          <div class="wide"><dt id="cDistL">Direct-line distance from Houston</dt><dd id="cDist">0 km</dd></div>
+        </dl>
+        <button class="btn" id="replay" type="button">Replay route</button>
+      </div>
+      <p class="note">Hubs are illustrative. Business hours are 9:00 to 17:00 local, Monday to Friday. Night shading follows the sun in real time.</p>
+    </div></div>
+  </section>
+
+  <section class="beat audience" data-static data-label="Partners" aria-label="Who we serve">
+    <div class="wrap"><div class="in">
+      <h2 class="head">Designed for Distributors &amp; Wholesalers</h2>
+      <p class="lede">We work exclusively B2B, supporting growth-focused partnerships</p>
+      <ul class="seg">
+        <li>
+          <h3>Packaging Distributors</h3>
+          <p>Comprehensive packaging solutions from design to delivery, meeting diverse industry requirements</p>
+        </li>
+        <li>
+          <h3>Paper &amp; Janitorial Suppliers</h3>
+          <p>Quality paper products and janitorial supplies with consistent availability and competitive pricing</p>
+        </li>
+        <li>
+          <h3>Foodservice &amp; Commercial Supply</h3>
+          <p>Reliable supply chains for foodservice operations and commercial wholesalers</p>
+        </li>
+      </ul>
+    </div></div>
+  </section>
+
+  <section class="beat tall final" data-label="Movement">
+    <div class="wrap"><div class="in">
+      <h2 class="big"><span>One world.</span><span>Endless movement.</span></h2>
+    </div></div>
+    <div class="marq" aria-hidden="true">
+      <div class="track" id="track"></div>
+    </div>
+  </section>
+
+  <section class="beat contact" id="contact" data-label="Contact" aria-label="Contact Texstar Global">
+    <div class="wrap"><div class="in">
+      <h2 class="big"><span>Texstar</span><span>Global</span></h2>
+      <p class="tagline">Trading Globally.</p>
+      <dl class="rows">
+        <div class="row">
+          <dt>Email</dt>
+          <dd><a href="mailto:info@texstarglobal.com" id="v-email">info@texstarglobal.com</a></dd>
+          <button class="btn" type="button" data-copy="v-email">Copy</button>
+        </div>
+        <div class="row">
+          <dt>Phone</dt>
+          <dd><a href="tel:+18327540922" id="v-phone">+1 832 754 0922</a></dd>
+          <button class="btn" type="button" data-copy="v-phone">Copy</button>
+        </div>
+        <div class="row">
+          <dt>Address</dt>
+          <dd id="v-addr">Houston, Texas<br>United States</dd>
+          <button class="btn" type="button" data-copy="v-addr">Copy</button>
+        </div>
+      </dl>
+    </div></div>
+    <p class="foot">© 2026 Texstar Global. Houston, Texas.</p>
+  </section>
+</main>
+
+<div class="hud" aria-hidden="true">
+  <span id="region">Houston, Texas</span>
+  <span id="coord">29.8° N, 95.4° W</span>
+  <span id="hclock"></span>
+  <span>Drag the globe to turn it</span>
+</div>
+<nav class="rail" id="rail" aria-label="Sections"><div class="ln"></div><div class="fill" id="fill"></div></nav>
+
+<script>
+(function () {
+  'use strict';
+  var D2R = Math.PI / 180;
+  var root = document.documentElement;
+  var mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var reduce = mqReduce.matches;
+  if (mqReduce.addEventListener) mqReduce.addEventListener('change', function () { reduce = mqReduce.matches; });
+  root.classList.add('js');
+
+  /* ---------- land (stylised outlines, lon/lat pairs) ---------- */
+  var POLY = [
+    [-168,66,-162,70,-156,71,-141,70,-128,70,-115,68,-95,72,-85,70,-80,63,-93,59,-94,57,-85,55,-80,52,-79,57,-77,62,-70,60,-65,60,-62,56,-56,52,-60,47,-66,45,-70,43,-70,41.5,-74,40,-76,37,-76,35,-81,31,-80,26,-82,27,-84,30,-89,30,-94,29.5,-97,26,-97.5,22,-96,19,-91,18.5,-90,21,-87,21,-88,16,-84,15.5,-83,10,-79.5,9,-77.5,8.5,-80,7.5,-85,10,-87,13,-92,14.5,-96,15.8,-105.5,20,-105,23,-109,26,-112.5,31,-114.5,31.5,-117,32.5,-121,35,-124,40,-124,46,-123,49,-127,51,-131,55,-137,58,-146,60.5,-152,59,-158,57,-164,55,-158,58.5,-162,60,-166,62,-165,64,-168,66],
+    [-73,78,-60,82,-30,83,-20,80,-20,70,-30,68,-43,60,-50,64,-55,70,-68,76],
+    [-77,8.5,-72,12,-62,10.5,-52,5,-50,0,-44,-2,-35,-5,-35,-9,-39,-14,-40,-20,-45,-23.5,-49,-26,-53,-34,-58,-35,-57,-38,-62,-39,-65,-42,-68,-47,-69,-52,-68,-55,-72,-52,-75,-47,-73,-40,-71,-30,-70,-18,-76,-14,-81,-6,-80,-2,-78,2,-77,8.5],
+    [-9,43,-9,37,-6,36,0,38,3,42,6,43,9,44,12,42,16,38,18,40,13,45,19,42,23,37,24,40,26,40.5,26.5,39,27.5,37,30,36.5,36,36.5,35,33,34.5,28,39,21,43,13,52,16,59,22.5,57,26,61,25,67,24.5,72,21,73,16,77,8,80,13,80,16,87,21,92,22,94,17,98,16,98,8,101,2,104,1.3,103,5,101,7,100,13,103,10,105,9,107,11,109,12,108,16,106,20,109,21.5,112,22,117,24,120,28,122,31,120,35,122,37,118,38,122,40,125,40,126,35,129,35,129,38,130,42,135,43,140,48,141,53,137,54,135,55,143,59,155,59,156,51,160,54,163,59,170,60,180,65,180,69,170,70,160,70,150,71,140,72,130,71,113,74,105,78,95,76,80,73,70,73,68,69,60,69,45,68,40,66,33,69,25,71,15,69,5,62,5,59,10,59,12,56,8,57,8,54,5,53,0,50,-2,48.5,-5,48,-1,46,-2,43.5,-9,43],
+    [-17,21,-13,27.5,-9,32,-6,35.8,10,37,11,33,20,31,25,32,32,31,34,28,37,22,39,16,43,12,51,12,48,5,41,-2,39,-6,40,-11,40,-15,35,-20,35,-25,32,-28.5,27,-33.5,20,-35,18,-32,15,-26,12,-17,13,-10,9,-1,9,4,5,6,-4,5,-8,4.5,-13,8,-17,14.5],
+    [44,-25,47,-25,50,-15,49,-12,44,-17],
+    [114,-22,122,-18,130,-12,136,-12,137,-16,142,-11,146,-19,153,-26,151,-34,147,-38.5,141,-38,135,-34.5,131,-31.5,124,-33.5,115,-34],
+    [130,31,132,34,135,35,140,36,142,40,141.5,45,139,41,136,36,131,34],
+    [-5,50,1,51,2,53,-2,57,-3,59,-6,57,-3,54,-5,52],
+    [-10,52,-6,52,-6,55,-10,54],
+    [95,5.5,98,4,104,-2,106,-6,102,-4,98,0],
+    [109,2,115,5,119,5,117,0,116,-4,111,-3,109,-1],
+    [105,-6.5,114,-7.5,114,-8.5,106,-7.5],
+    [131,-1,141,-3,150,-10,142,-9,138,-8,132,-4],
+    [-24,64,-14,65,-14,64,-20,63],
+    [-85,22,-80,23,-74,20,-78,20],
+    [166,-46,174,-41,178,-38,175,-37,172,-41,168,-46]
+  ];
+  var WATER = [
+    [28,41.5,28,45,33,46,38,47,41,42,36,41,31,41],
+    [47,45,53,47,54,40,53,37,49,37,50,40],
+    [10,54,13,54.5,20,55,21,57,24,57.5,23,59.5,30,60,22,60.5,21,63,25,65.5,22,66,17,62,19,59,16,56.5,13,55.5],
+    [48,30,50,30,52,28,56,26.5,56,25,54,24,51.5,24,50.5,26,49,28]
+  ];
+  function inPoly(lon, lat, p) {
+    var inside = false;
+    for (var i = 0, j = p.length - 2; i < p.length; j = i, i += 2) {
+      var xi = p[i], yi = p[i + 1], xj = p[j], yj = p[j + 1];
+      if (((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi)) inside = !inside;
+    }
+    return inside;
+  }
+  function isLand(lon, lat) {
+    var k, on = false;
+    for (k = 0; k < POLY.length; k++) { if (inPoly(lon, lat, POLY[k])) { on = true; break; } }
+    if (!on) return false;
+    for (k = 0; k < WATER.length; k++) { if (inPoly(lon, lat, WATER[k])) return false; }
+    return true;
+  }
+  function cart(lon, lat) {
+    var la = lat * D2R, lo = lon * D2R;
+    return [Math.cos(la) * Math.cos(lo), Math.cos(la) * Math.sin(lo), Math.sin(la)];
+  }
+  var lx = [], ly = [], lz = [], STEP = 1.9, row = 0, lat, lon;
+  for (lat = -56; lat <= 83; lat += STEP, row++) {
+    var ls = STEP / Math.cos(lat * D2R);
+    var start = -180 + ((row & 1) ? ls / 2 : 0);
+    for (lon = start; lon < 180; lon += ls) {
+      if (isLand(lon, lat)) { var c3 = cart(lon, lat); lx.push(c3[0]); ly.push(c3[1]); lz.push(c3[2]); }
+    }
+  }
+  var LX = new Float32Array(lx), LY = new Float32Array(ly), LZ = new Float32Array(lz), LN = LX.length;
+
+  /* graticule */
+  var GRAT = [], g, pts;
+  for (lon = -180; lon < 180; lon += 30) {
+    pts = []; for (lat = -90; lat <= 90; lat += 5) { pts.push(cart(lon, lat)); } GRAT.push(pts);
+  }
+  for (lat = -60; lat <= 60; lat += 30) {
+    pts = []; for (lon = -180; lon <= 180; lon += 5) { pts.push(cart(lon, lat)); } GRAT.push(pts);
+  }
+
+  /* ---------- hubs and lanes (illustrative) ---------- */
+  var CITY = {
+    Houston: [-95.4, 29.8], Rotterdam: [4.5, 51.9], Lagos: [3.4, 6.4], Durban: [31.0, -29.9], Santos: [-46.3, -23.9],
+    Dubai: [55.1, 25.0], Mumbai: [72.9, 18.9], Karachi: [67.0, 24.8], Mombasa: [39.7, -4.0],
+    Shanghai: [121.5, 31.2], Tokyo: [139.7, 35.7], Singapore: [103.8, 1.3], Sydney: [151.2, -33.9], Panama: [-79.5, 9.0]
+  };
+  var NODE_GROUP = {
+    Rotterdam: 0, Lagos: 0, Durban: 0, Santos: 0,
+    Dubai: 1, Mumbai: 1, Karachi: 1, Mombasa: 1,
+    Shanghai: 2, Tokyo: 2, Singapore: 2, Sydney: 2, Panama: 3
+  };
+  var TZ = {
+    Houston: 'America/Chicago', Rotterdam: 'Europe/Amsterdam', Lagos: 'Africa/Lagos', Durban: 'Africa/Johannesburg',
+    Santos: 'America/Sao_Paulo', Dubai: 'Asia/Dubai', Mumbai: 'Asia/Kolkata', Karachi: 'Asia/Karachi', Mombasa: 'Africa/Nairobi',
+    Shanghai: 'Asia/Shanghai', Tokyo: 'Asia/Tokyo', Singapore: 'Asia/Singapore', Sydney: 'Australia/Sydney', Panama: 'America/Panama'
+  };
+  var HUBS = [], nodes = [];
+  function mkHub(name, grp) {
+    var h = { name: name, lon: CITY[name][0], lat: CITY[name][1], v: cart(CITY[name][0], CITY[name][1]), g: grp, i: HUBS.length,
+      sx: 0, sy: 0, vis: false, open: false, day: false, time: '--:--', secs: '--:--:--', fmt: null, dist: 0, chip: null, ct: null };
+    try {
+      h.fmt = new Intl.DateTimeFormat('en-US', { timeZone: TZ[name], hourCycle: 'h23', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } catch (err) { h.fmt = null; }
+    HUBS.push(h);
+    return h;
+  }
+  var HOUH = mkHub('Houston', -1);
+  Object.keys(NODE_GROUP).forEach(function (n) { nodes.push(mkHub(n, NODE_GROUP[n])); });
+  var HOU = HOUH.v;
+  HUBS.forEach(function (h) {
+    h.dist = Math.round(6371 * Math.acos(clamp(h.v[0] * HOU[0] + h.v[1] * HOU[1] + h.v[2] * HOU[2], -1, 1)));
+  });
+
+  var NS = 56;
+  function buildLane(a, b, grp, idx) {
+    var A = cart(CITY[a][0], CITY[a][1]), B = cart(CITY[b][0], CITY[b][1]);
+    var dot = Math.max(-1, Math.min(1, A[0] * B[0] + A[1] * B[1] + A[2] * B[2]));
+    var om = Math.acos(dot), so = Math.sin(om);
+    var lift = 0.04 + 0.14 * (om / Math.PI);
+    var out = new Float32Array((NS + 1) * 3);
+    for (var k = 0; k <= NS; k++) {
+      var t = k / NS, s1 = Math.sin((1 - t) * om) / so, s2 = Math.sin(t * om) / so, sc = 1 + lift * Math.sin(Math.PI * t);
+      out[k * 3] = (A[0] * s1 + B[0] * s2) * sc;
+      out[k * 3 + 1] = (A[1] * s1 + B[1] * s2) * sc;
+      out[k * 3 + 2] = (A[2] * s1 + B[2] * s2) * sc;
+    }
+    return { p: out, g: grp, net: grp === 3, np: grp === 3 ? 1 : 2, speed: 0.06 + (idx % 5) * 0.012, phase: (idx * 0.173) % 1 };
+  }
+  var LANES = [], li = 0;
+  [['Rotterdam', 'Lagos', 'Durban', 'Santos'], ['Dubai', 'Mumbai', 'Karachi', 'Mombasa'], ['Shanghai', 'Tokyo', 'Singapore', 'Sydney']].forEach(function (list, gi) {
+    list.forEach(function (c) { LANES.push(buildLane('Houston', c, gi, li++)); });
+  });
+  [['Houston', 'Panama'], ['Panama', 'Santos'], ['Santos', 'Lagos'], ['Rotterdam', 'Dubai'], ['Lagos', 'Durban'], ['Durban', 'Mombasa'], ['Mombasa', 'Mumbai'], ['Dubai', 'Singapore'], ['Mumbai', 'Singapore'], ['Singapore', 'Shanghai'], ['Shanghai', 'Tokyo'], ['Singapore', 'Sydney']].forEach(function (pr) {
+    LANES.push(buildLane(pr[0], pr[1], 3, li++));
+  });
+  var focCache = {};
+  function laneFor(name) { return focCache[name] || (focCache[name] = buildLane('Houston', name, 4, 7)); }
+
+  /* ---------- keyframes, one per beat ---------- */
+  var KF = [
+    { lon: -95, lat: 24, z: 1.06, cx: 0.66, cy: 0.52, g: [0, 0, 0, 0], dr: 4, region: 'Houston, Texas' },
+    { lon: -22, lat: 20, z: 1.0, cx: 0.66, cy: 0.52, g: [1, 0, 0, 0], dr: 3, region: 'Atlantic, Europe and Africa' },
+    { lon: 52, lat: 20, z: 1.0, cx: 0.66, cy: 0.52, g: [1, 1, 0, 0], dr: 3, region: 'Arabian Sea, South Asia and East Africa' },
+    { lon: 112, lat: 12, z: 1.0, cx: 0.66, cy: 0.52, g: [1, 1, 1, 0], dr: 3, region: 'Asia and the Pacific' },
+    { lon: -40, lat: 26, z: 0.94, cx: 0.68, cy: 0.52, g: [1, 1, 1, 0.5], dr: 4, region: 'The whole network' },
+    { lon: 75, lat: 20, z: 0.94, cx: 0.68, cy: 0.52, g: [1, 1, 1, 1], dr: 4, region: 'The whole network' },
+    { lon: 4, lat: 28, z: 1.12, cx: 0.72, cy: 0.52, g: [1, 1, 1, 1], dr: 2, region: 'Live network' },
+    { lon: -8, lat: 18, z: 0.94, cx: 0.7, cy: 0.52, g: [1, 1, 1, 1], dr: 4, region: 'The whole network' },
+    { lon: 145, lat: 6, z: 1.08, cx: 0.7, cy: 0.5, g: [1, 1, 1, 1], dr: 14, region: 'Around the world' },
+    { lon: -95, lat: 26, z: 1.1, cx: 0.7, cy: 0.5, g: [1, 1, 1, 1], dr: 5, region: 'Houston, Texas' }
+  ];
+
+  /* ---------- state ---------- */
+  var canvas = document.getElementById('stage'), ctx = canvas.getContext('2d');
+  var W = 1, H = 1, DPR = 1;
+  var beats = [].slice.call(document.querySelectorAll('.beat'));
+  var inners = beats.map(function (b) { return b.querySelector('.in'); });
+  var statics = beats.map(function (b) { return b.hasAttribute('data-static'); });
+  var LIVE = beats.indexOf(document.querySelector('.live'));
+  var anchors = [], total = 1;
+  var cur = { lon: KF[0].lon, lat: KF[0].lat, z: KF[0].z, cx: KF[0].cx, cy: KF[0].cy, dr: 4, g: [0, 0, 0, 0] };
+  if (!reduce) { cur.lon += 80; cur.z *= 0.8; }
+  var T = { lon: 0, lat: 0, z: 1, cx: 0.66, cy: 0.5, dr: 4, g: [0, 0, 0, 0], idx: 0 };
+  var dragLon = 0, dragLat = 0, dragging = false, lastPX = 0, lastPY = 0, downX = 0, downY = 0, moved = 0;
+  var time = 0, flow = 0, lastTs = 0, lastY = 0, velS = 0;
+  var TH = {}, SUN = [1, 0, 0];
+  var hover = null, sel = 1, trace0 = 0, traceP = 1, liveW = 0, inLive = false;
+  var par = { x: 0, y: 0 }, pm = { x: 0, y: 0 };
+
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function sstep(v) { v = clamp(v, 0, 1); return v * v * (3 - 2 * v); }
+  function angDiff(a, b) { return ((((a - b + 540) % 360) + 360) % 360) - 180; }
+  function hexToRgb(h) {
+    h = h.trim().replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    var n = parseInt(h, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function rgba(c, a) { return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+  function readTheme() {
+    var cs = getComputedStyle(root);
+    function gv(n) { return hexToRgb(cs.getPropertyValue(n)); }
+    TH = { land: gv('--land'), grat: gv('--grat'), lane: gv('--lane'), lane2: gv('--lane2'), oHi: gv('--ocean-hi'), oLo: gv('--ocean-lo'),
+      star: gv('--star'), night: gv('--night'), ink: gv('--ink'), bg: gv('--bg') };
+    TH.nightA = (TH.bg[0] + TH.bg[1] + TH.bg[2]) < 300 ? 0.58 : 0.3;
+  }
+
+  /* ---------- sun position (real time) ---------- */
+  function sunVec(now) {
+    var d = now.getTime() / 86400000 + 2440587.5 - 2451545.0;
+    var g = (357.529 + 0.98560028 * d) * D2R;
+    var q = 280.459 + 0.98564736 * d;
+    var L = (q + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * D2R;
+    var e = (23.439 - 0.00000036 * d) * D2R;
+    var dec = Math.asin(Math.sin(e) * Math.sin(L));
+    var ra = Math.atan2(Math.cos(e) * Math.sin(L), Math.cos(L));
+    var gmst = (280.46061837 + 360.98564736629 * d) * D2R;
+    return cart((ra - gmst) / D2R, dec / D2R);
+  }
+  var NSZ = 150, nc = document.createElement('canvas');
+  nc.width = NSZ; nc.height = NSZ;
+  var nctx = nc.getContext('2d'), nimg = nctx.createImageData(NSZ, NSZ);
+  function drawNight(cx, cy, R, sv) {
+    var d = nimg.data, c = TH.night, aMax = TH.nightA * 255, i, j, p = 0;
+    for (j = 0; j < NSZ; j++) {
+      var py = 1 - (j + 0.5) * 2 / NSZ;
+      for (i = 0; i < NSZ; i++, p += 4) {
+        var px = (i + 0.5) * 2 / NSZ - 1, r2 = px * px + py * py;
+        if (r2 >= 1) { d[p + 3] = 0; continue; }
+        var lit = px * sv[0] + py * sv[1] + Math.sqrt(1 - r2) * sv[2];
+        var n = sstep((0.16 - lit) / 0.34);
+        d[p] = c[0]; d[p + 1] = c[1]; d[p + 2] = c[2]; d[p + 3] = Math.round(n * aMax);
+      }
+    }
+    nctx.putImageData(nimg, 0, 0);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.clip();
+    ctx.globalAlpha = 1;
+    ctx.drawImage(nc, cx - R, cy - R, R * 2, R * 2);
+    ctx.restore();
+  }
+
+  function computeAnchors() {
+    var sy = window.pageYOffset || 0;
+    anchors = beats.map(function (b) { var r = b.getBoundingClientRect(); return r.top + sy + r.height / 2; });
+    total = Math.max(1, document.documentElement.scrollHeight - H);
+    placeRail();
+  }
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    computeAnchors();
+    measureMarquee();
+  }
+
+  function evalKF(c) {
+    var n = KF.length, i = 0, u = 0;
+    if (c <= anchors[0]) { i = 0; u = 0; }
+    else if (c >= anchors[n - 1]) { i = n - 2; u = 1; }
+    else {
+      for (i = 0; i < n - 1; i++) { if (c < anchors[i + 1]) break; }
+      u = (c - anchors[i]) / (anchors[i + 1] - anchors[i]);
+    }
+    var e = sstep((u - 0.22) / 0.56), A = KF[i], B = KF[i + 1];
+    T.lon = A.lon + angDiff(B.lon, A.lon) * e;
+    T.lat = A.lat + (B.lat - A.lat) * e;
+    T.z = A.z + (B.z - A.z) * e;
+    T.cx = A.cx + (B.cx - A.cx) * e;
+    T.cy = A.cy + (B.cy - A.cy) * e;
+    T.dr = A.dr + (B.dr - A.dr) * e;
+    for (var k = 0; k < 4; k++) T.g[k] = A.g[k] + (B.g[k] - A.g[k]) * e;
+    T.idx = u > 0.5 ? i + 1 : i;
+  }
+
+  /* ---------- drawing ---------- */
+  var PX = 0, PY = 0, PZ = 0, lastX = 0, lastY2 = 0, hasLast = false;
+  var cl0, sl0, cp0, sp0;
+  function proj(X, Y, Z) {
+    var a = X * cl0 + Y * sl0;
+    PX = Y * cl0 - X * sl0;
+    PY = cp0 * Z - sp0 * a;
+    PZ = sp0 * Z + cp0 * a;
+  }
+  function visible() { return PZ > 0 || (PX * PX + PY * PY) > 1; }
+  function pathLane(L, upto, cx, cy, R) {
+    var pen = false, k;
+    hasLast = false; ctx.beginPath();
+    for (k = 0; k <= upto; k++) {
+      proj(L.p[k * 3], L.p[k * 3 + 1], L.p[k * 3 + 2]);
+      if (visible()) {
+        var sx = cx + R * PX, sy = cy - R * PY;
+        if (!pen) { ctx.moveTo(sx, sy); pen = true; } else ctx.lineTo(sx, sy);
+        lastX = sx; lastY2 = sy; hasLast = true;
+      } else pen = false;
+    }
+  }
+  function pointAt(L, u) {
+    var f = u * NS, ii = Math.min(NS - 1, Math.floor(f)), tt = f - ii, o = ii * 3;
+    proj(L.p[o] + (L.p[o + 3] - L.p[o]) * tt, L.p[o + 1] + (L.p[o + 4] - L.p[o + 1]) * tt, L.p[o + 2] + (L.p[o + 5] - L.p[o + 2]) * tt);
+  }
+  function drawFlow(L, u, cx, cy, R, trail, size, alpha) {
+    for (var tr = 0; tr < trail; tr++) {
+      var uu = u - tr * 0.014; if (uu < 0) uu += 1;
+      pointAt(L, uu);
+      if (!visible()) continue;
+      ctx.globalAlpha = (tr === 0 ? 0.95 : 0.5 * (1 - tr / (trail + 1))) * alpha;
+      ctx.fillStyle = rgba(TH.star, 1);
+      ctx.beginPath(); ctx.arc(cx + R * PX, cy - R * PY, tr === 0 ? size : size * 0.75, 0, 6.2832); ctx.fill();
+    }
+  }
+  function star(x, y, ro, ri) {
+    ctx.beginPath();
+    for (var k = 0; k < 10; k++) {
+      var r = (k & 1) ? ri : ro, a = -Math.PI / 2 + k * Math.PI / 5;
+      var px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+      if (k === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+  }
+  function tag(h, txt, strong, alpha) {
+    ctx.font = (strong ? '600' : '500') + ' 12px "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif';
+    var tw = ctx.measureText(txt).width, right = h.sx + tw + 26 < W;
+    var x = right ? h.sx + 12 : h.sx - 12 - tw, y = h.sy;
+    ctx.globalAlpha = alpha * 0.78; ctx.fillStyle = rgba(TH.bg, 1);
+    ctx.fillRect(x - 5, y - 9, tw + 10, 18);
+    ctx.globalAlpha = alpha; ctx.fillStyle = rgba(TH.ink, 1);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(txt, x, y + 0.5);
+  }
+  function globeR() { return (W < 760 ? Math.min(W * 0.44, H * 0.30) : Math.min(W * 0.34, H * 0.43)) * cur.z; }
+
+  function draw() {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    var R = globeR(), cx = W * cur.cx, cy = H * cur.cy;
+    var vLon = cur.lon + dragLon - par.x * 7 + Math.sin(time * 0.11) * cur.dr;
+    var vLat = clamp(cur.lat + dragLat + par.y * 4, -70, 70);
+    var lam0 = vLon * D2R, phi0 = vLat * D2R;
+    cl0 = Math.cos(lam0); sl0 = Math.sin(lam0); cp0 = Math.cos(phi0); sp0 = Math.sin(phi0);
+
+    var grd = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 1.55);
+    grd.addColorStop(0, rgba(TH.lane2, 0.16)); grd.addColorStop(1, rgba(TH.lane2, 0));
+    ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(cx, cy, R * 1.55, 0, 6.2832); ctx.fill();
+
+    var oc = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R * 1.05);
+    oc.addColorStop(0, rgba(TH.oHi, 1)); oc.addColorStop(1, rgba(TH.oLo, 1));
+    ctx.fillStyle = oc; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.fill();
+
+    proj(SUN[0], SUN[1], SUN[2]);
+    drawNight(cx, cy, R, [PX, PY, PZ]);
+
+    /* graticule */
+    ctx.strokeStyle = rgba(TH.grat, 1); ctx.lineWidth = 1; ctx.globalAlpha = 0.55;
+    var i, j, pen;
+    for (i = 0; i < GRAT.length; i++) {
+      var line = GRAT[i]; pen = false; ctx.beginPath();
+      for (j = 0; j < line.length; j++) {
+        proj(line[j][0], line[j][1], line[j][2]);
+        if (PZ > 0) { var gx = cx + R * PX, gy = cy - R * PY; if (!pen) { ctx.moveTo(gx, gy); pen = true; } else ctx.lineTo(gx, gy); }
+        else pen = false;
+      }
+      ctx.stroke();
+    }
+
+    /* land, dimmer on the night side */
+    var base = Math.max(0.75, R * 0.0049), s0 = SUN[0], s1 = SUN[1], s2 = SUN[2];
+    ctx.fillStyle = rgba(TH.land, 1);
+    for (i = 0; i < LN; i++) {
+      var X = LX[i], Y = LY[i], Z = LZ[i];
+      var a = X * cl0 + Y * sl0, z = sp0 * Z + cp0 * a;
+      if (z <= 0.03) continue;
+      var x = Y * cl0 - X * sl0, y = cp0 * Z - sp0 * a;
+      var dl = clamp(((X * s0 + Y * s1 + Z * s2) + 0.12) / 0.3, 0, 1);
+      ctx.globalAlpha = (0.2 + 0.8 * Math.sqrt(z)) * (0.5 + 0.5 * dl);
+      ctx.beginPath(); ctx.arc(cx + R * x, cy - R * y, base * (0.55 + 0.45 * z), 0, 6.2832); ctx.fill();
+    }
+
+    /* lanes */
+    var k, L, r, col, N = NS;
+    for (i = 0; i < LANES.length; i++) {
+      L = LANES[i]; r = clamp(cur.g[L.g], 0, 1);
+      if (r < 0.002) continue;
+      col = L.net ? TH.lane2 : TH.lane;
+      pathLane(L, Math.floor(r * N), cx, cy, R);
+      ctx.strokeStyle = rgba(col, 1); ctx.globalAlpha = (L.net ? 0.5 : 0.75) * (1 - liveW * 0.45); ctx.lineWidth = L.net ? 1 : 1.4; ctx.stroke();
+      if (r < 0.995 && hasLast) {
+        ctx.globalAlpha = 0.95; ctx.fillStyle = rgba(TH.star, 1);
+        ctx.beginPath(); ctx.arc(lastX, lastY2, 2.4, 0, 6.2832); ctx.fill();
+      }
+      if (r >= 0.995) {
+        for (var q = 0; q < L.np; q++) drawFlow(L, (flow * L.speed * 6 + L.phase + q / L.np) % 1, cx, cy, R, 6, 2, 1 - liveW * 0.5);
+      }
+    }
+
+    /* selected route */
+    var fl = (sel > 0 && cur.g[0] > 0.5) ? laneFor(HUBS[sel].name) : null;
+    if (fl && liveW > 0.01) {
+      var last = Math.floor(traceP * N);
+      pathLane(fl, last, cx, cy, R);
+      ctx.strokeStyle = rgba(TH.lane, 1); ctx.lineWidth = 6; ctx.globalAlpha = 0.16 * liveW; ctx.stroke();
+      pathLane(fl, last, cx, cy, R);
+      ctx.lineWidth = 2.2; ctx.globalAlpha = 0.95 * liveW; ctx.stroke();
+      if (traceP < 0.999) {
+        if (hasLast) {
+          ctx.globalAlpha = liveW; ctx.fillStyle = rgba(TH.star, 1);
+          ctx.beginPath(); ctx.arc(lastX, lastY2, 3.6, 0, 6.2832); ctx.fill();
+          ctx.globalAlpha = 0.35 * liveW; ctx.beginPath(); ctx.arc(lastX, lastY2, 8, 0, 6.2832); ctx.fill();
+        }
+      } else {
+        for (var q2 = 0; q2 < 3; q2++) drawFlow(fl, (flow * 0.55 + q2 / 3) % 1, cx, cy, R, 7, 2.4, liveW);
+      }
+    }
+
+    /* hubs */
+    for (i = 0; i < nodes.length; i++) {
+      var nd = nodes[i], ng = clamp(cur.g[nd.g], 0, 1);
+      nd.vis = false;
+      if (ng < 0.5) continue;
+      proj(nd.v[0], nd.v[1], nd.v[2]);
+      if (PZ <= 0.02) continue;
+      var nx = cx + R * PX, ny = cy - R * PY, na = (ng - 0.5) * 2;
+      nd.sx = nx; nd.sy = ny; nd.vis = true;
+      var col2 = nd.g === 3 ? TH.lane2 : TH.lane, rr = nd === hover ? 4.4 : 3;
+      ctx.globalAlpha = na;
+      if (nd.open) {
+        ctx.fillStyle = rgba(col2, 1);
+        ctx.beginPath(); ctx.arc(nx, ny, rr, 0, 6.2832); ctx.fill();
+        var ph = (time * 0.5 + nd.i * 0.37) % 1;
+        ctx.globalAlpha = na * (1 - ph) * 0.6; ctx.strokeStyle = rgba(col2, 1); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(nx, ny, 3 + ph * 11, 0, 6.2832); ctx.stroke();
+      } else {
+        ctx.strokeStyle = rgba(col2, 1); ctx.lineWidth = 1.3; ctx.globalAlpha = na * 0.85;
+        ctx.beginPath(); ctx.arc(nx, ny, rr, 0, 6.2832); ctx.stroke();
+      }
+    }
+
+    /* atmosphere rim */
+    var rim = ctx.createRadialGradient(cx, cy, R * 0.84, cx, cy, R);
+    rim.addColorStop(0, rgba(TH.lane2, 0)); rim.addColorStop(1, rgba(TH.lane2, 0.2));
+    ctx.globalAlpha = 1; ctx.fillStyle = rim; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.fill();
+    ctx.strokeStyle = rgba(TH.lane2, 0.55); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 6.2832); ctx.stroke();
+
+    /* Houston */
+    proj(HOU[0], HOU[1], HOU[2]);
+    HOUH.vis = PZ > 0.02;
+    if (HOUH.vis) {
+      var hxp = cx + R * PX, hyp = cy - R * PY, s = clamp(R / 300, 0.8, 1.3);
+      HOUH.sx = hxp; HOUH.sy = hyp;
+      var hp = (time * 0.45) % 1;
+      ctx.globalAlpha = (1 - hp) * 0.7; ctx.strokeStyle = rgba(TH.lane, 1); ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.arc(hxp, hyp, 8 * s + hp * 24 * s, 0, 6.2832); ctx.stroke();
+      ctx.globalAlpha = 1; ctx.fillStyle = rgba(TH.lane, 1); star(hxp, hyp, 9 * s, 3.8 * s); ctx.fill();
+    }
+
+    /* selection ring and labels */
+    var sh = HUBS[sel];
+    if (sh.vis && liveW > 0.05) {
+      ctx.globalAlpha = liveW; ctx.strokeStyle = rgba(TH.ink, 1); ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 4]); ctx.lineDashOffset = -time * 8;
+      ctx.beginPath(); ctx.arc(sh.sx, sh.sy, 13, 0, 6.2832); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    for (i = 0; i < HUBS.length; i++) {
+      var hb = HUBS[i];
+      if (!hb.vis) continue;
+      var isSel = hb === sh && liveW > 0.2, isHov = hb === hover;
+      if (isHov) tag(hb, hb.name + '  ' + hb.time, true, 1);
+      else if (isSel) tag(hb, hb.name + '  ' + hb.time, true, liveW);
+      else if (liveW > 0.2) tag(hb, hb.name, false, liveW);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- clocks, chips, card ---------- */
+  var regionEl = document.getElementById('region'), coordEl = document.getElementById('coord'), hclockEl = document.getElementById('hclock');
+  var fillEl = document.getElementById('fill'), railEl = document.getElementById('rail');
+  var chipsEl = document.getElementById('chips'), openEl = document.getElementById('openN'), hubNEl = document.getElementById('hubN');
+  var cName = document.getElementById('cName'), cState = document.getElementById('cState'), cTime = document.getElementById('cTime');
+  var cSun = document.getElementById('cSun'), cDist = document.getElementById('cDist'), cDistL = document.getElementById('cDistL');
+  var hudEl = document.querySelector('.hud');
+  var railBtns = [], regionStr = KF[0].region, lastCoord = 0, lastSec = -1, lastDist = '';
+  hubNEl.textContent = HUBS.length;
+
+  function stamp(h, now) {
+    if (!h.fmt) { h.time = '--:--'; h.secs = '--:--:--'; h.open = false; return; }
+    var p = h.fmt.formatToParts(now), o = {}, i;
+    for (i = 0; i < p.length; i++) o[p[i].type] = p[i].value;
+    var hr = parseInt(o.hour, 10) % 24;
+    h.time = (hr < 10 ? '0' : '') + hr + ':' + o.minute;
+    h.secs = h.time + ':' + o.second;
+    h.open = o.weekday !== 'Sat' && o.weekday !== 'Sun' && hr >= 9 && hr < 17;
+  }
+  function tick(now) {
+    SUN = sunVec(now);
+    var open = 0;
+    HUBS.forEach(function (h) {
+      stamp(h, now);
+      h.day = (h.v[0] * SUN[0] + h.v[1] * SUN[1] + h.v[2] * SUN[2]) > 0;
+      if (h.open) open++;
+      h.ct.textContent = h.time;
+      h.chip.classList.toggle('open', h.open);
+    });
+    openEl.textContent = open;
+    hclockEl.textContent = 'Houston ' + HOUH.time;
+    var s = HUBS[sel];
+    cTime.textContent = s.secs;
+    cSun.textContent = s.day ? 'Daylight' : 'Night';
+    cState.textContent = s.open ? 'In business hours' : 'Outside business hours';
+    cState.classList.toggle('open', s.open);
+  }
+  function select(i) {
+    sel = i; trace0 = time;
+    HUBS.forEach(function (h, k) {
+      h.chip.classList.toggle('on', k === i);
+      h.chip.setAttribute('aria-pressed', k === i ? 'true' : 'false');
+    });
+    cName.textContent = HUBS[i].name;
+    cDistL.textContent = i === 0 ? 'Route' : 'Direct-line distance from Houston';
+    lastDist = '';
+    tick(new Date());
+  }
+  HUBS.forEach(function (h, i) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', 'false');
+    b.innerHTML = '<i class="dot"></i><span class="cn"></span><span class="ct"></span>';
+    b.children[1].textContent = h.name;
+    b.addEventListener('click', function () { select(i); });
+    chipsEl.appendChild(b);
+    h.chip = b; h.ct = b.children[2];
+  });
+  document.getElementById('replay').addEventListener('click', function () { trace0 = time; lastDist = ''; });
+  select(sel);
+
+  beats.forEach(function (b, i) {
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.setAttribute('aria-label', 'Go to ' + b.getAttribute('data-label'));
+    btn.addEventListener('click', function () { window.scrollTo({ top: anchors[i] - H / 2, behavior: reduce ? 'auto' : 'smooth' }); });
+    railEl.appendChild(btn); railBtns.push(btn);
+  });
+  function placeRail() {
+    for (var i = 0; i < railBtns.length; i++) {
+      var p = anchors.length ? clamp((anchors[i] - H / 2) / total, 0, 1) : 0;
+      railBtns[i].style.top = (p * 100).toFixed(2) + '%';
+    }
+  }
+  function setRegion(t) {
+    regionEl.classList.add('out');
+    setTimeout(function () { regionEl.textContent = t; regionEl.classList.remove('out'); }, 160);
+  }
+  function fmtCoord(lat, lon) {
+    lon = ((lon + 540) % 360) - 180;
+    return Math.abs(lat).toFixed(1) + '° ' + (lat >= 0 ? 'N' : 'S') + ', ' + Math.abs(lon).toFixed(1) + '° ' + (lon >= 0 ? 'E' : 'W');
+  }
+  function num(n) { return n.toLocaleString('en-US'); }
+
+  /* scrubbed words */
+  var scrubs = [].slice.call(document.querySelectorAll('.scrub')).map(function (el) {
+    var words = el.textContent.trim().split(/\s+/);
+    el.textContent = '';
+    var spans = words.map(function (w, i) {
+      var s = document.createElement('span'); s.className = 'w'; s.textContent = w;
+      el.appendChild(s); if (i < words.length - 1) el.appendChild(document.createTextNode(' '));
+      return s;
+    });
+    return { spans: spans, idx: beats.indexOf(el.closest('.beat')) };
+  });
+
+  /* marquee */
+  var track = document.getElementById('track'), segW = 1000, mq = 0;
+  (function buildMarquee() {
+    var phrases = ['Across continents.', 'Across markets.', 'Across borders.'];
+    var starSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon fill="currentColor" points="12,2 14.9,8.6 22,9.3 16.6,14.1 18.2,21 12,17.5 5.8,21 7.4,14.1 2,9.3 9.1,8.6"/></svg>';
+    var html = '';
+    for (var g2 = 0; g2 < 2; g2++) {
+      html += '<div class="grp">';
+      for (var rep = 0; rep < 2; rep++) {
+        phrases.forEach(function (p, i) { html += '<span class="ph' + (i % 2 ? ' o' : '') + '">' + p + '</span>' + starSvg; });
+      }
+      html += '</div>';
+    }
+    track.innerHTML = html;
+  })();
+  function measureMarquee() { var g1 = track.querySelector('.grp'); if (g1 && g1.offsetWidth > 100) segW = g1.offsetWidth; }
+
+  function updateDom(c, sy, dy, dt) {
+    var i;
+    for (i = 0; i < beats.length; i++) {
+      var d = (anchors[i] - c) / H;
+      if (statics[i]) {
+        inners[i].style.opacity = (1 - sstep((Math.abs(d) - 0.6) / 0.45)).toFixed(3);
+      } else {
+        inners[i].style.opacity = (1 - sstep((Math.abs(d) - 0.38) / 0.5)).toFixed(3);
+        inners[i].style.transform = 'translate3d(0,' + (d * 36).toFixed(1) + 'px,0)';
+      }
+    }
+    for (i = 0; i < scrubs.length; i++) {
+      var sd = (anchors[scrubs[i].idx] - c) / H;
+      var f = clamp((0.45 - sd) / 0.45, 0, 1), n = scrubs[i].spans.length;
+      for (var w = 0; w < n; w++) scrubs[i].spans[w].style.opacity = clamp(f * (n + 1) - w, 0.2, 1).toFixed(2);
+    }
+    fillEl.style.transform = 'scaleY(' + clamp(sy / total, 0, 1).toFixed(4) + ')';
+    for (i = 0; i < railBtns.length; i++) railBtns[i].classList.toggle('on', i === T.idx);
+    var rg = T.idx === LIVE ? HUBS[sel].name : KF[T.idx].region;
+    if (rg !== regionStr) { regionStr = rg; setRegion(rg); }
+    if (time - lastCoord > 0.1) {
+      lastCoord = time;
+      coordEl.textContent = fmtCoord(clamp(cur.lat + dragLat, -70, 70), cur.lon + dragLon);
+    }
+    var sec = Math.floor(Date.now() / 1000);
+    if (sec !== lastSec) { lastSec = sec; tick(new Date()); }
+    var hs = HUBS[sel], ds = sel === 0 ? 'Origin' : num(Math.round(hs.dist * traceP)) + ' km · ' + num(Math.round(hs.dist * traceP * 0.621371)) + ' mi';
+    if (ds !== lastDist) { lastDist = ds; cDist.textContent = ds; }
+    mq += dy * 0.55 + (reduce ? 0 : dt * 26);
+    track.style.transform = 'translate3d(' + (-(((mq % segW) + segW) % segW)).toFixed(1) + 'px,0,0)';
+  }
+
+  /* ---------- loop ---------- */
+  function frame(ts) {
+    requestAnimationFrame(frame);
+    var dt = clamp((ts - lastTs) / 1000, 0.001, 0.05); lastTs = ts; time += dt;
+    var sy = window.pageYOffset || 0, dy = sy - lastY; lastY = sy;
+    velS += ((dy / dt) - velS) * Math.min(1, dt * 5);
+    var c = sy + H / 2, mobile = W < 760;
+    evalKF(c);
+    liveW = LIVE >= 0 ? sstep(1 - Math.abs(c - anchors[LIVE]) / (H * 0.85)) : 0;
+    if (liveW > 0) {
+      var hb = HUBS[sel];
+      T.lon += angDiff(hb.lon, T.lon) * liveW;
+      T.lat += (clamp(hb.lat * 0.85, -45, 45) - T.lat) * liveW;
+      T.z += ((mobile ? 1.0 : 1.16) - T.z) * liveW;
+    }
+    if (mobile) { T.cx = 0.5; T.cy = 0.33 - 0.09 * liveW; T.z += (0.9 - T.z) * liveW; }
+    hudEl.style.opacity = (1 - clamp(liveW * 1.6, 0, 1)).toFixed(2);
+    if (liveW > 0.5 && !inLive) { inLive = true; trace0 = time; }
+    else if (liveW < 0.15) inLive = false;
+    var fr = reduce ? 1 : clamp((time - trace0) / 2.4, 0, 1);
+    traceP = 1 - Math.pow(1 - fr, 3);
+
+    var k = reduce ? 1 : 1 - Math.exp(-dt * 5.5), kg = reduce ? 1 : 1 - Math.exp(-dt * 7);
+    cur.lon += angDiff(T.lon, cur.lon) * k;
+    cur.lat += (T.lat - cur.lat) * k;
+    cur.z += (T.z - cur.z) * k; cur.cx += (T.cx - cur.cx) * k; cur.cy += (T.cy - cur.cy) * k; cur.dr += (T.dr - cur.dr) * k;
+    for (var i = 0; i < 4; i++) cur.g[i] += (T.g[i] - cur.g[i]) * kg;
+    var kp = reduce ? 0 : 1 - Math.exp(-dt * 4);
+    par.x += (pm.x - par.x) * kp; par.y += (pm.y - par.y) * kp;
+    if (!dragging) { var decay = Math.exp(-dt * 0.7); dragLon *= decay; dragLat *= decay; }
+    flow += reduce ? 0 : dt * (0.18 + Math.min(Math.abs(velS) * 0.0012, 0.8));
+    draw();
+    updateDom(c, sy, dy, dt);
+  }
+
+  /* ---------- interaction ---------- */
+  function deg(px) { return px / globeR() * (180 / Math.PI) * 0.9; }
+  function hitTest(x, y, rad) {
+    var best = null, bd = rad * rad;
+    for (var i = 0; i < HUBS.length; i++) {
+      var h = HUBS[i]; if (!h.vis) continue;
+      var dx = x - h.sx, dy = y - h.sy, dd = dx * dx + dy * dy;
+      if (dd < bd) { bd = dd; best = h; }
+    }
+    return best;
+  }
+  canvas.addEventListener('pointerdown', function (e) {
+    dragging = true; moved = 0; downX = lastPX = e.clientX; downY = lastPY = e.clientY; canvas.classList.add('drag');
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (dragging) {
+      moved = Math.max(moved, Math.abs(e.clientX - downX) + Math.abs(e.clientY - downY));
+      dragLon -= deg(e.clientX - lastPX);
+      dragLat = clamp(dragLat + deg(e.clientY - lastPY), -35, 35);
+      lastPX = e.clientX; lastPY = e.clientY;
+    } else {
+      hover = hitTest(e.clientX, e.clientY, 16);
+      canvas.style.cursor = hover ? 'pointer' : '';
+    }
+  });
+  canvas.addEventListener('pointerup', function (e) {
+    dragging = false; canvas.classList.remove('drag');
+    if (moved < 6) {
+      var h = hitTest(e.clientX, e.clientY, e.pointerType === 'touch' ? 26 : 16);
+      if (h) {
+        select(h.i);
+        if (liveW < 0.5 && LIVE >= 0) window.scrollTo({ top: anchors[LIVE] - H / 2, behavior: reduce ? 'auto' : 'smooth' });
+      }
+    }
+  });
+  canvas.addEventListener('pointercancel', function () { dragging = false; canvas.classList.remove('drag'); });
+  canvas.addEventListener('pointerleave', function () { hover = null; canvas.style.cursor = ''; });
+  window.addEventListener('pointermove', function (e) {
+    if (e.pointerType !== 'mouse') return;
+    pm.x = e.clientX / Math.max(1, W) - 0.5; pm.y = e.clientY / Math.max(1, H) - 0.5;
+  });
+
+  /* theme */
+  var themeBtn = document.getElementById('theme');
+  function effectiveDark() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t === 'dark';
+    return !window.matchMedia('(prefers-color-scheme: light)').matches;
+  }
+  try { var saved = localStorage.getItem('texstar-theme'); if (saved === 'light' || saved === 'dark') root.setAttribute('data-theme', saved); } catch (e1) {}
+  themeBtn.addEventListener('click', function () {
+    var next = effectiveDark() ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('texstar-theme', next); } catch (e2) {}
+    readTheme();
+  });
+  var mqLight = window.matchMedia('(prefers-color-scheme: light)');
+  if (mqLight.addEventListener) mqLight.addEventListener('change', readTheme);
+
+  /* header links */
+  document.getElementById('brand').addEventListener('click', function (e) {
+    e.preventDefault(); window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  });
+  document.getElementById('toContact').addEventListener('click', function (e) {
+    e.preventDefault(); window.scrollTo({ top: document.documentElement.scrollHeight, behavior: reduce ? 'auto' : 'smooth' });
+  });
+
+  /* copy buttons */
+  [].slice.call(document.querySelectorAll('[data-copy]')).forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var el = document.getElementById(btn.getAttribute('data-copy'));
+      var text = el.innerText.replace(/\s*\n\s*/g, ', ');
+      function done(label) { btn.textContent = label; setTimeout(function () { btn.textContent = 'Copy'; }, 1600); }
+      function fallback() {
+        try { var rg = document.createRange(); rg.selectNodeContents(el); var sl = window.getSelection(); sl.removeAllRanges(); sl.addRange(rg); } catch (e3) {}
+        done('Selected');
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done('Copied'); }, fallback);
+      } else fallback();
+    });
+  });
+
+  /* ---------- start ---------- */
+  readTheme();
+  tick(new Date());
+  resize();
+  window.addEventListener('resize', resize);
+  window.addEventListener('load', resize);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
+  lastY = window.pageYOffset || 0;
+  requestAnimationFrame(function (ts) { lastTs = ts; frame(ts); });
+})();
+</script>
+
+</body></html>
